@@ -3,9 +3,7 @@
 pragma solidity ^0.8.19;
 
 import {Script} from "lib/forge-std/src/Script.sol";
-import {
-    VRFCoordinatorV2PlusMock
-} from "@chainlink/contracts/src/v0.8/vrf/mocks/VRFCoordinatorV2PlusMock.sol";
+import {VRFCoordinatorV2PlusMock} from "@chainlink/contracts/src/v0.8/vrf/mocks/VRFCoordinatorV2PlusMock.sol";
 import {LinkToken} from "test/mocks/LinkToken.sol";
 
 abstract contract CodeConstants {
@@ -33,8 +31,7 @@ contract HelperConfig is CodeConstants, Script {
         uint256 deployerKey;
     }
 
-    uint256 public constant DEFAULT_ANVIL_KEY =
-        0xac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80;
+    uint256 public constant DEFAULT_ANVIL_KEY = 0xac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80;
 
     NetworkConfig public localNetworkConfig;
     mapping(uint256 chainId => NetworkConfig) public networkConfigs;
@@ -43,9 +40,7 @@ contract HelperConfig is CodeConstants, Script {
         networkConfigs[ETH_SEPOLIA_CHAIN_ID] = getSepoliEthConfig();
     }
 
-    function getConfigByChainId(
-        uint256 chainId
-    ) public returns (NetworkConfig memory) {
+    function getConfigByChainId(uint256 chainId) public returns (NetworkConfig memory) {
         if (networkConfigs[chainId].vrfCoordinator != address(0)) {
             return networkConfigs[chainId];
         } else if (chainId == LOCAL_CHAIN_ID) {
@@ -62,17 +57,16 @@ contract HelperConfig is CodeConstants, Script {
 
     function getSepoliEthConfig() public returns (NetworkConfig memory) {
         // pure because we are not reading any state variables
-        return
-            NetworkConfig({
-                entranceFee: 0.01 ether, //1e16
-                interval: 30, //30 seconds
-                vrfCoordinator: 0x9DdfaCa8183c41ad55329BdeeD9F6A8d53168B1B,
-                gasLane: 0x787d74caea10b2b357790d5b5247c2f63d1d91572a9846f780606e4d953677ae,
-                callbackGasLimit: 500000, //500,000 gas
-                subscriptionId: 23708424609926450422340474041785192883646809981358877532107479621972588774885, // update this later
-                link: 0x779877A7B0D9E8603169DdbD7836e478b4624789,
-                deployerKey: vm.envUint("SEPOLIA_PRIVATE_KEY")
-            });
+        return NetworkConfig({
+            entranceFee: 0.01 ether, //1e16
+            interval: 30, //30 seconds
+            vrfCoordinator: 0x9DdfaCa8183c41ad55329BdeeD9F6A8d53168B1B,
+            gasLane: 0x787d74caea10b2b357790d5b5247c2f63d1d91572a9846f780606e4d953677ae,
+            callbackGasLimit: 500000, //500,000 gas
+            subscriptionId: 23708424609926450422340474041785192883646809981358877532107479621972588774885, // update this later
+            link: 0x779877A7B0D9E8603169DdbD7836e478b4624789,
+            deployerKey: vm.envUint("SEPOLIA_PRIVATE_KEY")
+        });
     }
 
     function getOrCreateAnvilEthConfig() public returns (NetworkConfig memory) {
@@ -83,10 +77,7 @@ contract HelperConfig is CodeConstants, Script {
 
         //deploy mocks and such
         vm.startBroadcast(DEFAULT_ANVIL_KEY);
-        VRFCoordinatorV2PlusMock vrfCoordinatorMock = new VRFCoordinatorV2PlusMock(
-                MOCK_BASE_FEE,
-                MOCK_GAS_PRICE_LINK
-            );
+        VRFCoordinatorV2PlusMock vrfCoordinatorMock = new VRFCoordinatorV2PlusMock(MOCK_BASE_FEE, MOCK_GAS_PRICE_LINK);
         LinkToken linkToken = new LinkToken();
         // ⭐ create a REAL subscription on the mock
         uint256 subId = vrfCoordinatorMock.createSubscription();

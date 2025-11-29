@@ -25,12 +25,8 @@
 
 pragma solidity ^0.8.19;
 
-import {
-    VRFConsumerBaseV2Plus
-} from "@chainlink/contracts/src/v0.8/vrf/dev/VRFConsumerBaseV2Plus.sol";
-import {
-    VRFV2PlusClient
-} from "@chainlink/contracts/src/v0.8/vrf/dev/libraries/VRFV2PlusClient.sol";
+import {VRFConsumerBaseV2Plus} from "@chainlink/contracts/src/v0.8/vrf/dev/VRFConsumerBaseV2Plus.sol";
+import {VRFV2PlusClient} from "@chainlink/contracts/src/v0.8/vrf/dev/libraries/VRFV2PlusClient.sol";
 import {
     AutomationCompatibleInterface
 } from "@chainlink/contracts/src/v0.8/automation/interfaces/AutomationCompatibleInterface.sol";
@@ -43,15 +39,13 @@ import {
  */
 
 contract Raffle is VRFConsumerBaseV2Plus, AutomationCompatibleInterface {
-    /**Custom Errors */
+    /**
+     * Custom Errors
+     */
     error Raffle__NotEnoughETHSent(); // Custom error for not enough ETH sent to enter the raffle (good Practice to save gas)
     error Raffle__TransferFailed(); // Custom error for transfer failure
     error Raffle__RaffleNotOpen(); // Custom error for raffle not open
-    error Raffle__UpkeepNotNeeded(
-        uint256 currentBalance,
-        uint256 numPlayers,
-        uint256 raffleState
-    ); // Custom error for upkeep not needed
+    error Raffle__UpkeepNotNeeded(uint256 currentBalance, uint256 numPlayers, uint256 raffleState); // Custom error for upkeep not needed
 
     /*Type Declarations */
     enum RaffleState {
@@ -115,14 +109,14 @@ contract Raffle is VRFConsumerBaseV2Plus, AutomationCompatibleInterface {
     }
 
     /**
-    @dev This is the function that chainlink nodes keeper call
-    the lookk for 'upKeepNeeded' to return the value
-    following should be true to return the value
-    1. The lottery is open
-    2. time interval has passed to between raffle runs
-    3. the contract has ETH(balance)
-    4. The contract has players(registered)
-    5. implicitly your function is funded with LINK token
+     * @dev This is the function that chainlink nodes keeper call
+     * the lookk for 'upKeepNeeded' to return the value
+     * following should be true to return the value
+     * 1. The lottery is open
+     * 2. time interval has passed to between raffle runs
+     * 3. the contract has ETH(balance)
+     * 4. The contract has players(registered)
+     * 5. implicitly your function is funded with LINK token
      */
 
     // function checkUpkeep(
@@ -143,7 +137,11 @@ contract Raffle is VRFConsumerBaseV2Plus, AutomationCompatibleInterface {
 
     function checkUpkeep(
         bytes memory /* checkData */
-    ) public view returns (bool upkeepNeeded, bytes memory /* performData */) {
+    )
+        public
+        view
+        returns (bool upkeepNeeded, bytes memory /* performData */)
+    {
         bool isOpen = s_raffleState == RaffleState.OPEN;
         bool timePassed = ((block.timestamp - s_lastTimeStamp) > i_interval);
         bool hasPlayers = s_players.length > 0;
@@ -157,37 +155,34 @@ contract Raffle is VRFConsumerBaseV2Plus, AutomationCompatibleInterface {
     // 2. use random number to pick a player
     //3. Be automatically called
     function performUpkeep(bytes calldata /* performData */) external {
-        (bool upkeepNeeded, ) = checkUpkeep(""); // calling checkUpkeep function
+        (bool upkeepNeeded,) = checkUpkeep(""); // calling checkUpkeep function
         //require(upkeepNeeded, "Upkeep not needed");
         if (!upkeepNeeded) {
-            revert Raffle__UpkeepNotNeeded(
-                address(this).balance,
-                s_players.length,
-                uint256(s_raffleState)
-            );
+            revert Raffle__UpkeepNotNeeded(address(this).balance, s_players.length, uint256(s_raffleState));
         } // check if upkeep is needed
         // if (block.timestamp - s_lastTimeStamp < i_interval) revert(); // check if the time interval has passed
         s_raffleState = RaffleState.CALCULATING; // Set the raffle state to CALCULATING
 
-        VRFV2PlusClient.RandomWordsRequest memory request = VRFV2PlusClient
-            .RandomWordsRequest({
-                keyHash: i_keyHash,
-                subId: i_subscriptionId,
-                requestConfirmations: REQUEST_CONFIRMATIONS,
-                callbackGasLimit: i_callbackGasLimit,
-                numWords: NUM_WORDS,
-                extraArgs: VRFV2PlusClient._argsToBytes(
-                    VRFV2PlusClient.ExtraArgsV1({nativePayment: false})
-                )
-            });
+        VRFV2PlusClient.RandomWordsRequest memory request = VRFV2PlusClient.RandomWordsRequest({
+            keyHash: i_keyHash,
+            subId: i_subscriptionId,
+            requestConfirmations: REQUEST_CONFIRMATIONS,
+            callbackGasLimit: i_callbackGasLimit,
+            numWords: NUM_WORDS,
+            extraArgs: VRFV2PlusClient._argsToBytes(VRFV2PlusClient.ExtraArgsV1({nativePayment: false}))
+        });
         uint256 requestId = s_vrfCoordinator.requestRandomWords(request);
         emit RequestedRaffleWinner(requestId);
     }
 
     function fulfillRandomWords(
-        uint256 /*requestId*/,
+        uint256,
+        /*requestId*/
         uint256[] calldata randomWords
-    ) internal override {
+    )
+        internal
+        override
+    {
         //checks
 
         //Effects: used to update state variables
@@ -200,7 +195,7 @@ contract Raffle is VRFConsumerBaseV2Plus, AutomationCompatibleInterface {
         s_lastTimeStamp = block.timestamp; // Reset the last timestamp
 
         //Interactions: used to interact with other contracts or send ether
-        (bool success, ) = recentWinner.call{value: address(this).balance}(""); // Transfer the balance to the winner
+        (bool success,) = recentWinner.call{value: address(this).balance}(""); // Transfer the balance to the winner
         if (!success) {
             revert Raffle__TransferFailed(); // Revert if the transfer fails
         }
@@ -208,7 +203,7 @@ contract Raffle is VRFConsumerBaseV2Plus, AutomationCompatibleInterface {
     }
 
     /**
-    Getter Functions
+     * Getter Functions
      */
     function getEntranceFee() external view returns (uint256) {
         // Getter function to get the entrance fee

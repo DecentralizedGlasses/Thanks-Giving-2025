@@ -4,11 +4,7 @@ pragma solidity ^0.8.19;
 import {Script} from "lib/forge-std/src/Script.sol";
 import {Raffle} from "../src/Raffle.sol";
 import {HelperConfig} from "./HelperConfig.s.sol";
-import {
-    CreateSubscription,
-    FundSubscription,
-    AddConsumer
-} from "script/Interactions.s.sol";
+import {CreateSubscription, FundSubscription, AddConsumer} from "script/Interactions.s.sol";
 
 contract DeployRaffle is Script {
     function run() external returns (Raffle, HelperConfig) {
@@ -28,16 +24,13 @@ contract DeployRaffle is Script {
             }
             //we need to create subscription
             CreateSubscription createSubscription = new CreateSubscription();
-            (config.subscriptionId, config.vrfCoordinator) = createSubscription
-                .createSubscription(config.vrfCoordinator, config.deployerKey); //here we are saving new subscription id to vrfcoordinator
+            (config.subscriptionId, config.vrfCoordinator) =
+                createSubscription.createSubscription(config.vrfCoordinator, config.deployerKey); //here we are saving new subscription id to vrfcoordinator
 
             //fund it!
             FundSubscription fundSubscription = new FundSubscription();
             fundSubscription.fundSubscription(
-                config.vrfCoordinator,
-                config.subscriptionId,
-                config.link,
-                config.deployerKey
+                config.vrfCoordinator, config.subscriptionId, config.link, config.deployerKey
             );
         }
 
@@ -54,12 +47,7 @@ contract DeployRaffle is Script {
 
         AddConsumer addConsumer = new AddConsumer();
         //don't need to broadcast, coz our consumer already have broadcast
-        addConsumer.addConsumer(
-            address(raffle),
-            config.vrfCoordinator,
-            config.subscriptionId,
-            config.deployerKey
-        );
+        addConsumer.addConsumer(address(raffle), config.vrfCoordinator, config.subscriptionId, config.deployerKey);
 
         return (raffle, helperConfig);
     }

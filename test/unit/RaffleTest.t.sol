@@ -7,9 +7,7 @@ import {DeployRaffle} from "script/DeployRaffle.s.sol";
 import {Raffle} from "../../src/Raffle.sol";
 import {HelperConfig} from "script/HelperConfig.s.sol";
 import {Vm} from "forge-std/Vm.sol";
-import {
-    VRFCoordinatorV2PlusMock
-} from "@chainlink/contracts/src/v0.8/vrf/mocks/VRFCoordinatorV2PlusMock.sol";
+import {VRFCoordinatorV2PlusMock} from "@chainlink/contracts/src/v0.8/vrf/mocks/VRFCoordinatorV2PlusMock.sol";
 
 contract RaffleTest is Test {
     Raffle public raffle;
@@ -111,7 +109,7 @@ contract RaffleTest is Test {
         vm.roll(block.number + 1);
 
         //Act
-        (bool upkeepNeeded, ) = raffle.checkUpkeep("");
+        (bool upkeepNeeded,) = raffle.checkUpkeep("");
 
         //Assert
         assert(!upkeepNeeded);
@@ -126,7 +124,7 @@ contract RaffleTest is Test {
         raffle.performUpkeep("");
 
         //Act
-        (bool upkeepNeeded, ) = raffle.checkUpkeep("");
+        (bool upkeepNeeded,) = raffle.checkUpkeep("");
 
         //Assert
         assert(!upkeepNeeded);
@@ -164,12 +162,7 @@ contract RaffleTest is Test {
 
         //Act /Assert
         vm.expectRevert(
-            abi.encodeWithSelector(
-                Raffle.Raffle__UpkeepNotNeeded.selector,
-                currentBalance,
-                numPlayers,
-                rState
-            )
+            abi.encodeWithSelector(Raffle.Raffle__UpkeepNotNeeded.selector, currentBalance, numPlayers, rState)
         );
         raffle.performUpkeep("");
     }
@@ -184,10 +177,7 @@ contract RaffleTest is Test {
     }
 
     // what if we need to get data from emitted events in our tests?
-    function testPerformUpKeepUpdatesRaffleStateAndEmitRequestId()
-        public
-        raffleEntered
-    {
+    function testPerformUpKeepUpdatesRaffleStateAndEmitRequestId() public raffleEntered {
         //Act
         vm.recordLogs(); // cheatcode to record all the events inside an array
         raffle.performUpkeep("");
@@ -206,29 +196,22 @@ contract RaffleTest is Test {
 
     function testFulfillRandomWordsCanOnlyBeCalledAfterPerformUpkeep(
         uint256 randomRequestId //fuzz testing it will take 256 different random inputs and pass it into here
-    ) public raffleEntered skipFork {
-        vm.expectRevert(bytes("nonexistent request"));
-        VRFCoordinatorV2PlusMock(vrfCoordinator).fulfillRandomWords(
-            randomRequestId,
-            address(raffle)
-        );
-    }
-
-    function testFulFillRandomWordsPicksAWinnerResetAndSendsMoney()
+    )
         public
         raffleEntered
         skipFork
     {
+        vm.expectRevert(bytes("nonexistent request"));
+        VRFCoordinatorV2PlusMock(vrfCoordinator).fulfillRandomWords(randomRequestId, address(raffle));
+    }
+
+    function testFulFillRandomWordsPicksAWinnerResetAndSendsMoney() public raffleEntered skipFork {
         //Arrange
         uint256 additionalEntrants = 3; //4 total
         uint256 startingIndex = 1;
         address expectedWinner = address(1);
 
-        for (
-            uint256 i = startingIndex;
-            i < startingIndex + additionalEntrants;
-            i++
-        ) {
+        for (uint256 i = startingIndex; i < startingIndex + additionalEntrants; i++) {
             address newPlayer = address(uint160(i)); //address(i)
             hoax(newPlayer, 1 ether); //give player ETH + PRANK
             raffle.enterRaffle{value: entranceFee}();
@@ -242,10 +225,7 @@ contract RaffleTest is Test {
         raffle.performUpkeep("");
         Vm.Log[] memory entries = vm.getRecordedLogs(); //cheat code to store the emitted event
         bytes32 requestId = entries[1].topics[1];
-        VRFCoordinatorV2PlusMock(vrfCoordinator).fulfillRandomWords(
-            uint256(requestId),
-            address(raffle)
-        );
+        VRFCoordinatorV2PlusMock(vrfCoordinator).fulfillRandomWords(uint256(requestId), address(raffle));
         //Assert
         address recentWinner = raffle.getRecentWinner();
         Raffle.RaffleState raffleState = raffle.getRaffleState();
