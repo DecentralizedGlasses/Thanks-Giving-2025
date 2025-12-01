@@ -31,11 +31,11 @@ This README walks you step-by-step through **how everything works**, **why certa
 
 This Lottery Contract allows:
 
-✔ Anyone to enter by paying ETH
-✔ A random winner to be selected using Chainlink VRF
-✔ Winner selection to happen automatically using Chainlink Automation
-✔ Funds to be transferred securely and trustlessly
-✔ The lottery to restart after each round
+✔ **Anyone to enter by paying ETH**
+✔ **A random winner to be selected using Chainlink VRF**
+✔ **Winner selection to happen automatically using Chainlink Automation**
+✔ **Funds to be transferred securely and trustlessly**
+✔ **The lottery to restart after each round**
 
 This design eliminates human influence or manipulation, making it a perfect example of **decentralized randomness**, **automation**, and **smart contract logic**.
 
